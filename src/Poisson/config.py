@@ -2,7 +2,7 @@ import numpy as np
 from numpy import linalg as LA
 
 # Divisions for real space mesh
-S = np.array([3,2,1])
+S = np.array([30,30,30])
 
 # Setup real space dimension of supercell, in Bohr radii
 R = np.array([6.,6.,6.])

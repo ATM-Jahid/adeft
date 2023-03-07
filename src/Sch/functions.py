@@ -63,12 +63,13 @@ def fdtest(arg1,Vdual):
         #print(dE2)
     return
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def printProgressBar (iteration, total, energy, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     """
     Call in a loop to create terminal progress bar
     @params:
         iteration   - Required  : current iteration (Int)
         total       - Required  : total iterations (Int)
+        energy      - Requires  : Hartree (Float)
         prefix      - Optional  : prefix string (Str)
         suffix      - Optional  : suffix string (Str)
         decimals    - Optional  : positive number of decimals in percent complete (Int)
@@ -79,7 +80,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+    print(f'\r{energy:0.6f} {prefix} |{bar}| {percent}% {suffix}', end = '')
     # Print New Line on Complete
     if iteration == total:
         print()
@@ -119,28 +120,40 @@ def getE(arg1,Vdual):
 
 def H(arg1,Vdual):
     # Build H per instructions in the assignment
+    out = -0.5 * L(arg1) + cIdag(diagprod(Vdual, cI(arg1)))
     return out
 
 def getgrad(arg1,Vdual):
     #Build getgrad based on instructions in the assignment
+    cHW = H(arg1,Vdual)
+    cOW = O(arg1)
+    cWd = arg1.conj().T
+    cUi = LA.inv(cWd @ cOW)
+    out = (cHW - (cOW @ cUi) @ (cWd @ cHW)) @ cUi
     return out
 
-def sd(arg1,arg2,Vdual):
+def sd(arg1,cnt,Vdual):
     alpha=0.00003
-    #Build your steepest decent algorithm. It should return the optimized W as out
-    return out
+    old = arg1
+    for i in range(cnt):
+        new = old - alpha * getgrad(old, Vdual)
+        printProgressBar(i, cnt, getE(new, Vdual))
+        old = new
 
-#def getPsi(arg1,Vdual):
-#    U= # ADD Your code
-#    Y= # Add your code, see above equations
-#    mu= # Add your code, see above equations
-#    epsilon,D=np.linalg.eig(mu) # This line does not need changing
-#    epsilon=np.real(epsilon) # Does not need change, removing numerical round off in imaginary component
-#    Psi= # Add your code, see above equations
-#    return Psi,epsilon # Does not need to be changed
+    #Build your steepest descent algorithm. It should return the optimized W as out
+    return new
 
-    # For DFT part
+def getPsi(arg1,Vdual):
+    U = arg1.conj().T @ O(arg1) # ADD Your code
+    Y = arg1 @ sp.inv(sp.sqrtm(U)) # Add your code, see above equations
+    mu = Y.conj().T @ H(Y, Vdual) # Add your code, see above equations
+    epsilon,D=LA.eig(mu) # This line does not need changing
+    epsilon=np.real(epsilon) # Does not need change, removing numerical round off in imaginary component
+    Psi = Y @ D # Add your code, see above equations
+    return Psi,epsilon # Does not need to be changed
 
+
+##### For DFT part
 
 def excVWN(arg1):
     # Add references

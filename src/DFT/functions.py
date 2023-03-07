@@ -113,14 +113,23 @@ def L(arg1):
 def getE(arg1,Vdual):
     # Build this function based on the description in the assignment.
     # Okay to take real part after you confirm that only roundoff remains in imaginary component
+    #arg1 = arg1 @ sp.inv(sp.sqrtm(arg1.conj().T @ O(arg1)))
     U = arg1.conj().T @ O(arg1)
-    n = diagouter(cI(arg1) @ LA.inv(U), cI(arg1))
-    out = -0.5 * np.trace(arg1.conj().T @ L(arg1) @ LA.inv(U)) + Vdual.conj().T @ n
+    n = f * diagouter(cI(arg1) @ LA.inv(U), cI(arg1))
+    phi = -4*np.pi * Linv(O(cJ(n)))
+    out = -0.5 * f * np.trace(arg1.conj().T @ L(arg1) @ LA.inv(U)) + Vdual.conj().T @ n \
+            + 0.5 * n.conj().T @ cJdag(O(phi)) + n.conj().T @ cJdag(O(cJ(excVWN(n))))
     return np.real(out.item())
 
 def H(arg1,Vdual):
     # Build H per instructions in the assignment
-    out = -0.5 * L(arg1) + cIdag(diagprod(Vdual, cI(arg1)))
+    #arg1 = arg1 @ sp.inv(sp.sqrtm(arg1.conj().T @ O(arg1)))
+    U = arg1.conj().T @ O(arg1)
+    n = f * diagouter(cI(arg1) @ LA.inv(U), cI(arg1))
+    phi = -4*np.pi * Linv(O(cJ(n)))
+    Veff = Vdual + cJdag(O(phi)) + cJdag(O(cJ(excVWN(n)))) \
+            + diagprod(excpVWN(n), cJdag(O(cJ(n))))
+    out = -0.5 * L(arg1) + cIdag(diagprod(Veff, cI(arg1)))
     return out
 
 def getgrad(arg1,Vdual):
@@ -129,7 +138,7 @@ def getgrad(arg1,Vdual):
     cOW = O(arg1)
     cWd = arg1.conj().T
     cUi = LA.inv(cWd @ cOW)
-    out = (cHW - (cOW @ cUi) @ (cWd @ cHW)) @ cUi
+    out = f * (cHW - (cOW @ cUi) @ (cWd @ cHW)) @ cUi
     return out
 
 def sd(arg1,cnt,Vdual):

@@ -6,7 +6,7 @@ np.set_printoptions(formatter={'float_kind':float_formatter})
 
 # Define number of steepest decent iterations
 
-Nit=500
+Nit=600
 
 # Compute potential
 
